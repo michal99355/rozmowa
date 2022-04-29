@@ -1,0 +1,10 @@
+SELECT rental_date as Date, /*pobieramy datę*/
+  SUM(DISTINCT(rental_id)) AS New_rentals, /*sumująć indywidualne zamówienia otrzymujemy ilość nowych zamówień danego dnia*/  
+  Active_rentals = ( SELECT SUM(DISTINCT(rental_id)) FROM rental WHERE rental_id BETWEEN rental_date and return_date) /*stosując zagnieżdżone query zbieram informację*/
+  /*tylko o aktywnych wypożyczeniach*/
+  New_rentals + Active rentals AS Rented_titles, /*Tutaj wystarczy suma dwóch poprzednich kolumn*/
+  SUM(DISTINCT(customer_id)) AS No_of_customers_with_rentals /*sumując indywidualncyh klientów z danego dnia mamy informację o ich ilości*/
+  Rentals_>_10_days = ( SELECT SUM(DISTINCT(rental_id)) FROM rental WHERE rental_date + INTERVAL CURRENT_DATE() DAY > 10 /*suma zamówień przekraczających 10 dni*/
+FROM rental
+GROUP BY rental_date /*grupujemy wszystko dla każdego dnia*/
+WHERE stor_store_id = 1 /*jeśli dobrze zrozumiałem zadanie to raport ma być dla sklepu nr 1*/
