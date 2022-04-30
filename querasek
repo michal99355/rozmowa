@@ -1,3 +1,4 @@
+1)
 CREATE TABLE store_ID1 (
     Date date PRIMARY KEY,
     New_rentals INT(4),
@@ -11,17 +12,13 @@ CREATE TABLE store_ID1 (
 /*i to jak cała baza tworzy jedną całość dzięki temu. Wszystko się w łączy w logiczny i spójny sposób, a my mamy dzięki temu prosty dostęp do informacji w niej zawartych*/
 
 
-
-
-
+2)
 INSERT INTO store_ID1 (Date, New_rentals, Active_rentals, Rented_titles, No_of_customers_with_rentals, Rentals_>_10_days)
   VALUES (value1, value2, value3, value4, value5);
  /*kod zasialający do tabeli raportowej z zadania*/
 
 
-
-
-
+3)
 SELECT FORMAT(rental.rental_date, 'd') as Date, /*pobieramy datę i ją formatuje do pożądanej wartości gdyż w bazie są użyte timestampy z godziną co uniemożliwia grupowanie dniami. W zadaniu była podana konkretna data ale w bazie rekordy są do 2006*/
 	COUNT(DISTINCT(rental.rental_id)) AS New_rentals, /*zliczając indywidualne id zamówień otrzymujemy liczbę nowych zamówień danego dnia*/  
 	(SELECT COUNT(DISTINCT(rental.rental_id)) 
@@ -39,3 +36,6 @@ FROM rental as rental LEFT JOIN inventory as inventory ON rental.inventory_id = 
 WHERE inventory.store_id = 1 /*jeśli dobrze zrozumiałem zadanie to raport ma być dla sklepu nr 1*/
 GROUP BY FORMAT(rental.rental_date, 'd') /*grupuje po dniach gdyż tak sugerowała tabelka z zadania*/
 ORDER BY FORMAT(rental.rental_date, 'd') DESC; /*sortuje po dniach*/
+/* Według zadania w każdym z zagnieżdżonych query w WHERE jak i w głównym query według zadania powininem dać następujący warunek 
+/*FORMAT(rental.rental_date, 'd') > 2022-03-01*/
+/*Zadanie było pisane na MSSQL gdyż tylko do takiej bazy sakila miałem dostęp i mogłem na niej pracować*/
