@@ -1,4 +1,14 @@
-
+CREATE TABLE store_ID1 (
+    Date date PRIMARY KEY,
+    New_rentals INT(4),
+    Active_rentals INT(4),
+    Rented_titles INT(4),
+    No_of_customers_with_rentals INT(4)
+    Rentals_>_10_days INT(4)
+);
+/*tak rozumiem strukturę danych czyli to jak ma wyglądać ta tabela*/
+/*Jeżeli chodzi o taką strite strukture to będzie to relacyjna baza danych sakila. Patrząc na jej scheme widzimy wyraźnie powiązania między sobą kluczami*/
+/*i to jak cała baza tworzy jedną całość dzięki temu. Wszystko się w łączy w logiczny i spójny sposób, a my mamy dzięki temu prosty dostęp do informacji w niej zawartych*/
 
 
 
@@ -6,21 +16,26 @@
 
 INSERT INTO store_ID1 (Date, New_rentals, Active_rentals, Rented_titles, No_of_customers_with_rentals, Rentals_>_10_days)
   VALUES (value1, value2, value3, value4, value5);
+ /*kod zasialający do tabeli raportowej z zadania*/
 
 
 
 
 
-SELECT FORMAT(rental.rental_date, 'd') as Date, /*pobieramy datę i ją formatuje do pożądanej wartości*/
-	COUNT(DISTINCT(rental.rental_id)) AS New_rentals, /*sumująć indywidualne zamówienia otrzymujemy ilość nowych zamówień danego dnia*/  
+SELECT FORMAT(rental.rental_date, 'd') as Date, /*pobieramy datę i ją formatuje do pożądanej wartości gdyż w bazie są użyte timestampy z godziną co uniemożliwia grupowanie dniami. W zadaniu była podana konkretna data ale w bazie rekordy są do 2006*/
+	COUNT(DISTINCT(rental.rental_id)) AS New_rentals, /*zliczając indywidualne id zamówień otrzymujemy liczbę nowych zamówień danego dnia*/  
 	(SELECT COUNT(DISTINCT(rental.rental_id)) 
-		FROM rental 
-		WHERE return_date > CURRENT_TIMESTAMP and return_date IS NULL) as Active_rentals, /*stosując zagnieżdżone query zbieram informację*/
-	COUNT(DISTINCT(rental.customer_id)) AS No_of_customers_with_rentals, /*sumując indywidualncyh klientów z danego dnia mamy informację o ich ilości*/
+		FROM rental as rental INNER JOIN inventory as inventory ON rental.inventory_id = inventory.inventory_id 
+		WHERE rental.return_date > CURRENT_TIMESTAMP and rental.return_date IS NULL AND inventory.store_id = 1) as Active_rentals, /*stosując zagnieżdżone query zbieram informację o aktywnych zamówieniach*/
+		/*w zadaniu należało użyć jak najbardziej elastyczną strukturę więc zastosowałem timestamp. Przez to jednak cała kolumna ma wartość zero*/
+	COUNT(DISTINCT(rental.customer_id)) AS No_of_customers_with_rentals, /*zliczająć indywidualncyh id klientów z danego dnia mamy informację o ich ilości*/
+	COUNT(DISTINCT(film.film_id)) as Rented_titles /*Liczba unikalnych tytułów wypożyczonych */
 	(SELECT COUNT(DISTINCT(rental.rental_id)) 
-			FROM rental as rental INNER JOIN inventory as inventory ON rental.inventory_id = inventory.inventory_id INNER JOIN film as film ON inventory.film_id = film.film_id 
-			WHERE rental.rental_date + film.rental_duration < 10) as Rentals_over_10_days /*suma zamówień przekraczających 10 dni*/
-FROM rental as rental INNER JOIN inventory as inventory ON rental.inventory_id = inventory.inventory_id
-WHERE inventory.store_id = 1/*jeśli dobrze zrozumiałem zadanie to raport ma być dla sklepu nr 1 i od konkretnej daty*/
-GROUP BY FORMAT(rental.rental_date, 'd')
-ORDER BY FORMAT(rental.rental_date, 'd') DESC; /*grupujemy wszystko dla każdego dnia*/
+		FROM rental as rental INNER JOIN inventory as inventory ON rental.inventory_id = inventory.inventory_id 
+		INNER JOIN film as film ON inventory.film_id = film.film_id 
+		WHERE rental.return_date IS NULL AND rental_date + film.rental_duration > 10 AND inventory.store_id = 1 ) as Rentals_over_10_days 
+		/*suma zamówień przekraczających 10 dni, niestety nie rozumiem dlaczego nie chce grupować się na dni tylko pokazuje wszystko na każdy dzień*/
+FROM rental as rental LEFT JOIN inventory as inventory ON rental.inventory_id = inventory.inventory_id
+WHERE inventory.store_id = 1 /*jeśli dobrze zrozumiałem zadanie to raport ma być dla sklepu nr 1*/
+GROUP BY FORMAT(rental.rental_date, 'd') /*grupuje po dniach gdyż tak sugerowała tabelka z zadania*/
+ORDER BY FORMAT(rental.rental_date, 'd') DESC; /*sortuje po dniach*/
